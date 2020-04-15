@@ -1,0 +1,10 @@
+/models/
+/output/
+/__pycache__/
+/resized_train_gt/
+/resized_train_ld/
+/results-UNET-SOTA-4-projs/
+/scores/
+validation_accuracy_UNET-SOTA-CROPPED-model-4-projs.npy
+*.csv
+
