@@ -37,10 +37,6 @@ low_quality_dir = './resized_train_ld/'
 high_quality_dir = './resized_train_gt/'
 target_dir = "./output/"
 
-#TEMP
-#low_quality_dir = 'D:\\DADOS\\datasets-doutorado\\APPLE-DL-EXTENDED-128-zero-rot-121-projs\\input\\'
-#high_quality_dir = 'D:\\DADOS\\datasets-doutorado\\APPLE-DL-EXTENDED-128\\'
-#target_dir = "D:\\DADOS\\datasets-doutorado\\APPLE-DL-EXTENDED-128-zero-rot-121-projs\\target\\"
 files_ext = '.png'
 
 debug = False
@@ -59,7 +55,8 @@ for file in os.listdir(high_quality_dir):
             #output_img = np.transpose(output_img)
 
             if residual_learning:
-                target = (input_img-output_img)/255
+                target = ((input_img-output_img)/255)
+                target = (target - np.amin(target))/(np.amax(target) - np.amin(target))
                 #target = output_img/255 - 0.5
             else:
                 target = output_img

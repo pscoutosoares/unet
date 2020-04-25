@@ -85,11 +85,12 @@ class Tomographic_Dataset(Dataset):
 
         # reduce mean
         img = img[:, :, ::-1]  # switch to BGR
-        img = np.transpose(img, (2, 0, 1)) / 255.
+        img = np.transpose(img, (2, 0, 1)) / 255
+
         img[0] -= self.means[0]
         img[1] -= self.means[1]
         img[2] -= self.means[2]
-
+        img = (img - np.amin(img)) / (np.amax(img) - np.amin(img))
         # convert to tensor
         img = torch.from_numpy(img.copy()).float()
         label = torch.from_numpy(label.copy()).float()
