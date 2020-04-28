@@ -12,6 +12,7 @@ from data_loader import Tomographic_Dataset
 
 from UNET import VGGNet, UNETmodel, UNETsota
 from GOOGLENET import GOOGLENETmodel
+from UNETArticle import get_skip_model
 
 from skimage.measure import compare_ssim
 from skimage.measure import compare_psnr
@@ -28,7 +29,7 @@ crop      = True
 weighted = False
 
 projs = 4
-net = "UNET-SOTA"
+net = "UNET-Article"
 
 if ssim_loss:
     net = net+"-SSIM-LOSS"
@@ -87,6 +88,9 @@ elif net.startswith('GOOGLENET'):
 elif net.startswith('UNET-SOTA'):
     print("UNET-SOTA SELECTED!")
     fcn_model = UNETsota()
+elif net.startswith('UNET-Article'):
+    print("UNET-Article SELECTED!")
+    fcn_model = get_skip_model()
 else:
     print("NO MODULE SELECTED!!")
 
@@ -151,6 +155,7 @@ def train():
             else:
                 inputs, labels = Variable(batch['X']), Variable(batch['Y'])
 
+            inputs = inputs.unsqueeze(1)
             outputs = fcn_model(inputs)
             if ssim_loss:
                 loss = - criterion(outputs, labels)
@@ -193,6 +198,7 @@ def val(epoch):
         else:
             inputs = Variable(batch['X'])
 
+        inputs = inputs.unsqueeze(1)
         output = fcn_model(inputs)
         output = output.data.cpu().numpy()
 

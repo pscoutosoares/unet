@@ -22,7 +22,7 @@ net             = 'UNET-SOTA'
 projs           =  4
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
-means           = data_mean_value("test4.csv", input_dir) / 255.
+means           = data_mean_value("test3.csv", input_dir) / 255.
 
 
 
@@ -36,7 +36,7 @@ def mse_acc(pred, target):
 
 def evaluate_img():
 
-    test_data = Tomographic_Dataset(csv_file="test4.csv", phase='val', flip_rate=0, train_csv="train4.csv",
+    test_data = Tomographic_Dataset(csv_file="test3.csv", phase='val', flip_rate=0, train_csv="train4.csv",
                                     input_dir=input_dir, target_dir=target_dir)
     test_loader = DataLoader(test_data, batch_size=1, num_workers=1)
 
@@ -66,6 +66,7 @@ def evaluate_img():
         #print(batch['X'].shape)
         #type(batch['X'])
         input = Variable(batch['X'].cuda())
+        input = input.unsqueeze(1)
         print(input.shape)
         start = time.time()
         outputs = fcn_model(input)
@@ -78,9 +79,6 @@ def evaluate_img():
 
         output = outputs.data.cpu().numpy()
 
-
-
-
         N, _, h, w = output.shape
         y = output[0, 0, :, :]
         pred = output.transpose(0, 2, 3, 1).reshape(-1, 1).reshape(N, h, w)
@@ -91,9 +89,7 @@ def evaluate_img():
         ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
 
         img_batch = batch['X']
-        img_batch[:, 0, ...].add_(means[0])
-        img_batch[:, 1, ...].add_(means[1])
-        img_batch[:, 2, ...].add_(means[2])
+        img_batch.add_(means[0])
 
         grid = utils.make_grid(img_batch)
         x = grid.numpy()[::-1].transpose((1, 2, 0))

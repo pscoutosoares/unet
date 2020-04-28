@@ -4,8 +4,10 @@
 /resized_train_gt/
 /resized_train_ld/
 /results-UNET-SOTA-4-projs/
+/results-UNET-Article-4-projs/
 /scores/
 /.idea/
 validation_accuracy_UNET-SOTA-CROPPED-model-4-projs.npy
+validation_accuracy_UNET-Article-CROPPED-model-4-projs.npy
 *.csv
 
