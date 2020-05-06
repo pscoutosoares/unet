@@ -17,16 +17,14 @@ from torchvision import utils
 from skimage.measure import compare_ssim
 from skimage.measure import compare_psnr
 from math import log10
-net             = 'UNET-SOTA'
+net             = 'UNET-article'
 #net             = 'ZERO-ROT-VGG-UNET'
 projs           =  4
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
-means           = data_mean_value("test3.csv", input_dir) / 255.
+means           = data_mean_value("test4.csv", input_dir) / 255.
 
-
-
-model_src = "./models/UNET-SOTA-CROPPED-model-4-projs"
+model_src = "./models/UNET-Article-CROPPED-model-4-projs"
 
 
 def mse_acc(pred, target):
@@ -36,7 +34,7 @@ def mse_acc(pred, target):
 
 def evaluate_img():
 
-    test_data = Tomographic_Dataset(csv_file="test3.csv", phase='val', flip_rate=0, train_csv="train4.csv",
+    test_data = Tomographic_Dataset(csv_file="test4.csv", phase='val', flip_rate=0, train_csv="train3.csv",
                                     input_dir=input_dir, target_dir=target_dir)
     test_loader = DataLoader(test_data, batch_size=1, num_workers=1)
 

@@ -40,7 +40,7 @@ target_dir = "./output/"
 files_ext = '.png'
 
 debug = False
-residual_learning = True
+residual_learning = False
 
 if not os.path.isdir(target_dir):
     os.mkdir(target_dir)
@@ -59,7 +59,8 @@ for file in os.listdir(high_quality_dir):
                 target = (target - np.amin(target))/(np.amax(target) - np.amin(target))
                 #target = output_img/255 - 0.5
             else:
-                target = output_img
+                target = output_img/255
+                target = (target - np.amin(target)) / (np.amax(target) - np.amin(target))
 
             if debug:
                 print('min: {} max: {}'.format(np.min(target), np.max(target)))
