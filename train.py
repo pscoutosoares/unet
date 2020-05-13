@@ -28,7 +28,7 @@ crop      = True
 weighted = False
 
 projs = 4
-net = "UNET-SOTA"
+net = "GOOGLENET"
 
 if ssim_loss:
     net = net+"-SSIM-LOSS"
@@ -37,16 +37,16 @@ if weighted:
 if crop:
     net = net+"-CROPPED"
 
-batch_size = 12 #antes 10
-epochs     = 20
+batch_size = 15 #antes 10
+epochs     = 100
 
 momentum   = 0.5
-w_decay    = 0  #antes 1e-5
+w_decay    = 0 #antes 1e-5
 
 #after each 'step_size' epochs, the 'lr' is reduced by 'gama'
-lr         = 0.01 # antes le-4 (VGG-UNET)
-step_size  = 5
-gamma      = 0.1
+lr         = 0.00001 # antes le-4 (VGG-UNET)
+step_size  = 100
+gamma      = 0.5
 
 
 
@@ -104,7 +104,7 @@ else:
     criterion = nn.MSELoss()
 
 
-optimizer = optim.Adam(fcn_model.parameters(), lr=lr, weight_decay=w_decay)
+optimizer = optim.RMSprop(fcn_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
 
@@ -170,8 +170,8 @@ def train():
             for i in range(N):
                 d1 = pred[i]
                 d2 = target[i]
-                psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
-                ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
+                psnr.append(compare_psnr(d1, d2))
+                ssim.append(compare_ssim(d1, d2))
             psnr_train.append(np.mean(psnr))
             ssim_train.append(np.mean(ssim))
 
@@ -204,8 +204,8 @@ def val(epoch):
         for i in range(N):
             d1 = pred[i]
             d2 = target[i]
-            psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
-            ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
+            psnr.append(compare_psnr(d1, d2))
+            ssim.append(compare_ssim(d1, d2))
         psnr_validation.append(np.mean(psnr))
         ssim_validation.append(np.mean(ssim))
 
@@ -216,7 +216,7 @@ def val(epoch):
     mse_accs = np.mean(total_mse)
     validation_accuracy[epoch] = mse_accs
 
-    print("val: epoch{}, mse_acc: {}, time{}, ssim: {} ,  psnr: {}".format(epoch, mse_accs,  time.time() - ts,  np.mean(ssim), np.mean(psnr) ))
+    print("val: epoch{}, mse_acc: {}, ssim: {} ,  psnr: {}".format(epoch, mse_accs,  np.mean(ssim), np.mean(psnr) ))
 
 
 def mse_acc(pred, target):
