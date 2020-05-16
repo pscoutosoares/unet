@@ -1,8 +1,35 @@
 
-
 Execute the following:
 
-1. run build_npy.py to obtain the correct format of output files
-2. run data_utils.py to create csv files for training, validation, and test
-3. adjust the parameters in data_loader.py
-4.
+1. In build_npy.py, adjust the following parameters:
+	a - low_quality_dir: use the low dosage image directory
+	b - high_quality_dir: use the ground truth image directory
+	c - target_dir: set the directory where the .npy files going to be outputted
+Then run this file to obtain the correct format of output(.npy files).
+
+2. (optional - This repo already have the .csv with specified data division used in lodopab-ct article) Run data_utils.py to create csv files for training, validation, and test. You only have to adjust 
+	a - src_img:  Directory of the low dosage or ground truth images
+	b - split_proportion:  proportion of data into the training, validation, and testing groups respectively
+
+3. Adjust the parameters in data_loader.py:
+	a - original_src: the ground truth images path. It will be passed directly to the batch for future comparisons with the proposed solution
+	b - train_dim: dimensions (h,w) of the cropped files used in the training stage. h and w must be smaller than the size of the original images
+
+4. Adjust the parameters in train.py:
+	a - train_file: training .csv file created in step 2
+	b - val_file: validation .csv file
+	c - input_dir: low dosage image directory
+	d - target_dir: the .npy folder created in step 1
+	e - net: select the network model you want
+	f - adjust other hyperparameters as you wish
+	
+5. Run train.py.
+
+6. Adjust the parameters in generalization.py: 
+	a - model_src: model created at training phase 
+	b - net: net used in training phase
+	c - input_dir: low dosage image directory
+	d - target_dir: .npy folder created at step 1
+	e - means from the .csv file
+
+7. Run generalization.py

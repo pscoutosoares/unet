@@ -4,7 +4,7 @@ import numpy as np
 
 def get_skip_model(scales=5, skip=4):
     assert(1 <= scales <= 6)
-    channels = (16, 32, 64, 64, 128, 128)
+    channels = (64, 128, 256, 512, 128, 128)
     skip_channels = [skip] * (scales)
     return Skip(in_ch=1, out_ch=1, channels=channels[:scales],
                 skip_channels=skip_channels)

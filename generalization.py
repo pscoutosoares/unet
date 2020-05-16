@@ -22,7 +22,7 @@ net             = 'UNET-article'
 projs           =  4
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
-means           = data_mean_value("test4.csv", input_dir) / 255.
+means           = data_mean_value("test3.csv", input_dir) / 255.
 
 model_src = "./models/UNET-Article-CROPPED-model-4-projs"
 
@@ -34,7 +34,7 @@ def mse_acc(pred, target):
 
 def evaluate_img():
 
-    test_data = Tomographic_Dataset(csv_file="test4.csv", phase='val', flip_rate=0, train_csv="train3.csv",
+    test_data = Tomographic_Dataset(csv_file="test3.csv", phase='val', flip_rate=0, train_csv="train3.csv",
                                     input_dir=input_dir, target_dir=target_dir)
     test_loader = DataLoader(test_data, batch_size=1, num_workers=1)
 

@@ -13,6 +13,7 @@ from data_loader import Tomographic_Dataset
 from UNET import VGGNet, UNETmodel, UNETsota
 from GOOGLENET import GOOGLENETmodel
 from UNETArticle import get_skip_model
+from UNETORIGINAL import UNETOriginal
 
 from skimage.measure import compare_ssim
 from skimage.measure import compare_psnr
@@ -29,7 +30,7 @@ crop      = True
 weighted = False
 
 projs = 4
-net = "UNET-Article"
+net = "UNET-Original"
 
 if ssim_loss:
     net = net+"-SSIM-LOSS"
@@ -91,6 +92,9 @@ elif net.startswith('UNET-SOTA'):
 elif net.startswith('UNET-Article'):
     print("UNET-Article SELECTED!")
     fcn_model = get_skip_model()
+elif net.startswith('UNET-Original'):
+    print("UNET-Original SELECTED!")
+    fcn_model = UNETOriginal()
 else:
     print("NO MODULE SELECTED!!")
 
@@ -175,8 +179,8 @@ def train():
             for i in range(N):
                 d1 = pred[i]
                 d2 = target[i]
-                psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
-                ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
+                psnr.append(compare_psnr(d1 , d2))
+                ssim.append(compare_ssim(d1 , d2 ))
             psnr_train.append(np.mean(psnr))
             ssim_train.append(np.mean(ssim))
 
@@ -210,8 +214,8 @@ def val(epoch):
         for i in range(N):
             d1 = pred[i]
             d2 = target[i]
-            psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
-            ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
+            psnr.append(compare_psnr(d1 , d2 ))
+            ssim.append(compare_ssim(d1 , d2 ))
         psnr_validation.append(np.mean(psnr))
         ssim_validation.append(np.mean(ssim))
 

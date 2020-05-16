@@ -9,5 +9,5 @@
 /.idea/
 validation_accuracy_UNET-SOTA-CROPPED-model-4-projs.npy
 validation_accuracy_UNET-Article-CROPPED-model-4-projs.npy
-*.csv
+
 
