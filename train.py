@@ -28,7 +28,7 @@ crop      = True
 weighted = False
 
 projs = 4
-net = "GOOGLENET"
+net = "VGG-UNET"
 
 if ssim_loss:
     net = net+"-SSIM-LOSS"
@@ -37,7 +37,7 @@ if weighted:
 if crop:
     net = net+"-CROPPED"
 
-batch_size = 15 #antes 10
+batch_size = 20 #antes 10
 epochs     = 100
 
 momentum   = 0.5
@@ -103,10 +103,8 @@ if ssim_loss:
 else:
     criterion = nn.MSELoss()
 
-
 optimizer = optim.RMSprop(fcn_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
-
 
 # create dir for score
 score_dir = os.path.join("scores", configs)
@@ -170,8 +168,8 @@ def train():
             for i in range(N):
                 d1 = pred[i]
                 d2 = target[i]
-                psnr.append(compare_psnr(d1, d2))
-                ssim.append(compare_ssim(d1, d2))
+                psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
+                ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
             psnr_train.append(np.mean(psnr))
             ssim_train.append(np.mean(ssim))
 
@@ -204,8 +202,8 @@ def val(epoch):
         for i in range(N):
             d1 = pred[i]
             d2 = target[i]
-            psnr.append(compare_psnr(d1, d2))
-            ssim.append(compare_ssim(d1, d2))
+            psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
+            ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
         psnr_validation.append(np.mean(psnr))
         ssim_validation.append(np.mean(ssim))
 
