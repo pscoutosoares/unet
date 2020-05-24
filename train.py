@@ -48,12 +48,10 @@ lr         = 0.00001 # antes le-4 (VGG-UNET)
 step_size  = 100
 gamma      = 0.5
 
-
-
 configs         = "{}-model-{}-projs".format(net,projs)
 
-train_file      = "train3.csv"
-val_file        = "validation3.csv"
+train_file      = "train4.csv"
+val_file        = "train4.csv"
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
 
