@@ -50,8 +50,8 @@ gamma      = 0.5
 
 configs         = "{}-model-{}-projs".format(net,projs)
 
-train_file      = "train4.csv"
-val_file        = "train4.csv"
+train_file      = "train3.csv"
+val_file        = "validation3.csv"
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
 

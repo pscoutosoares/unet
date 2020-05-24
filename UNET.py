@@ -141,7 +141,7 @@ class UNETmodel(nn.Module):
         self.deconv5 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, dilation=1, output_padding=1)
         self.bn5     = nn.BatchNorm2d(32)
         self.classifier = nn.Conv2d(32, 1, kernel_size=1)
-        self.outputer = nn.Tanh()
+        self.outputer = nn.Sigmoid()
 
     def forward(self, x):
         output = self.pretrained_net(x)
