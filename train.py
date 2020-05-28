@@ -38,7 +38,7 @@ if weighted:
 if crop:
     net = net+"-CROPPED"
 
-batch_size = 12 #antes 10
+batch_size = 60 #antes 10
 epochs     = 20
 
 momentum   = 0.5
