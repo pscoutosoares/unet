@@ -12,7 +12,7 @@ from data_loader import Tomographic_Dataset
 
 from UNET import VGGNet, UNETmodel, UNETsota
 from GOOGLENET import GOOGLENETmodel
-
+from CoopNets import CoopNets
 from skimage.measure import compare_ssim
 from skimage.measure import compare_psnr
 
@@ -28,7 +28,7 @@ crop      = True
 weighted = False
 
 projs = 4
-net = "VGG-UNET"
+net = "CoopNets"
 
 if ssim_loss:
     net = net+"-SSIM-LOSS"
@@ -85,6 +85,9 @@ elif net.startswith('GOOGLENET'):
 elif net.startswith('UNET-SOTA'):
     print("UNET-SOTA SELECTED!")
     fcn_model = UNETsota()
+elif net.startswith('CoopNets'):
+    print("CoopNets SELECTED!")
+    fcn_model = CoopNets()
 else:
     print("NO MODULE SELECTED!!")
 
@@ -108,17 +111,6 @@ scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 score_dir = os.path.join("scores", configs)
 if not os.path.exists(score_dir):
     os.makedirs(score_dir)
-
-#plt.ion()
-#fig = plt.figure()
-#plt.ylim(0,0.05)
-#ax = fig.add_subplot(111)
-#line1, = ax.plot(validation_accuracy)
-
-#def weighted_mse(output, target):
-#    weight
-#    loss = torch.mean((output-target)**2)
-#    torch.mul(loss, weight)
 
 ssim_train = []
 ssim_validation = []
@@ -221,7 +213,6 @@ def mse_acc(pred, target):
 
 
 if __name__ == "__main__":
-    #val(0)  # show the accuracy before training
     start = time.time()
     train()
     end = time.time()

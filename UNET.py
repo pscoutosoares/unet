@@ -15,7 +15,7 @@ class UNETsota(nn.Module):
         super().__init__()
         #encoder
         self.relu = nn.ReLU(inplace=True)
-        self.conv1_1 = nn.Conv2d(3, 64, kernel_size=3, padding=1)
+        self.conv1_1 = nn.Conv2d(1, 64, kernel_size=3, padding=1)
         self.conv1_2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(64)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)

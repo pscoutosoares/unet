@@ -7,7 +7,7 @@ class GOOGLENETmodel(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.conv1          = nn.Conv2d(in_channels=3, out_channels=1, kernel_size=3, padding= 1)
+        self.conv1          = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=3, padding= 1)
         self.relu           = nn.ReLU(inplace=True)
         self.conv2          = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, padding = 1)
         self.bn1            = nn.BatchNorm2d(64)
@@ -15,11 +15,10 @@ class GOOGLENETmodel(nn.Module):
         self.incpetion2     = InceptionB(192)
         self.conv3          = nn.Conv2d(in_channels=192, out_channels=64, kernel_size=3, padding=1)
         self.conv4          = nn.Conv2d(64, 1, kernel_size=1)
-        self.outputer       = nn.Tanh()
+        self.outputer       = nn.Sigmoid() #default outputer
 
 
     def forward(self,x):
-
         y = self.relu(self.conv1(x))
         y = self.conv2(y)
         y = self.relu(self.bn1(y))

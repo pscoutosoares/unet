@@ -17,16 +17,16 @@ from torchvision import utils
 from skimage.measure import compare_ssim
 from skimage.measure import compare_psnr
 from math import log10
-net             = 'GOOGLENET'
+net             = 'CoopNet'
 #net             = 'ZERO-ROT-VGG-UNET'
 projs           =  4
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
-means           = data_mean_value("test4.csv", input_dir) / 255.
+means           = data_mean_value("train3.csv", input_dir) / 255.
 
 
 
-model_src = "./models/GOOGLENET-CROPPED-model-4-projs"
+model_src = "./models/CoopNets-CROPPED-model-4-projs"
 
 
 def mse_acc(pred, target):
@@ -91,14 +91,14 @@ def evaluate_img():
         ssim.append(compare_ssim(d1, d2))
 
         img_batch = batch['X']
-        img_batch[:, 0, ...].add_(means[0])
-        img_batch[:, 1, ...].add_(means[1])
-        img_batch[:, 2, ...].add_(means[2])
+        # img_batch[:, 0, ...].add_(means[0])
+        # img_batch[:, 1, ...].add_(means[1])
+        # img_batch[:, 2, ...].add_(means[2])
 
         grid = utils.make_grid(img_batch)
         x = grid.numpy()[::-1].transpose((1, 2, 0))
-        final_rec = x[:, :, 0] - y
-
+        #final_rec = x[:, :, 0] - y
+        final_rec =  y
         #final_rec = y+0.5
 
         original = scipy.misc.imread(batch['o'][0], flatten=True)

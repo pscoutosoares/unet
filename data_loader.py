@@ -17,7 +17,7 @@ import numpy as np
 import scipy.misc
 import random
 import os
-
+import matplotlib.pyplot as plt
 from data_utils import data_mean_value
 import torch
 from torch.utils.data import Dataset
@@ -63,7 +63,7 @@ class Tomographic_Dataset(Dataset):
 
     def __getitem__(self, idx):
         img_name   = self.data.iloc[idx, 0]
-        img        = scipy.misc.imread(self.input_dir+img_name, mode='RGB')
+        img        = scipy.misc.imread(self.input_dir+img_name, flatten=True)
         label_name = self.data.iloc[idx, 1]
         label      = np.load(self.target_dir+label_name)
 
@@ -73,7 +73,7 @@ class Tomographic_Dataset(Dataset):
 
 
         if self.crop:
-            h, w, _  = img.shape
+            h, w  = img.shape
             top   = random.randint(0, h - self.new_h)
             left  = random.randint(0, w - self.new_w)
             img   = img[top:top + self.new_h, left:left + self.new_w]
@@ -84,13 +84,19 @@ class Tomographic_Dataset(Dataset):
             label = np.fliplr(label)
 
         # reduce mean
-        img = img[:, :, ::-1]  # switch to BGR
-        img = np.transpose(img, (2, 0, 1)) / 255
+        # img = img[:, :, ::-1]  # switch to BGR
+        # img = np.transpose(img, (2, 0, 1)) / 255
+        img = img/255
+        img -= self.means[0]
+        # img[1] -= self.means[1]
+        # img[2] -= self.means[2]
 
-        img[0] -= self.means[0]
-        img[1] -= self.means[1]
-        img[2] -= self.means[2]
         img = (img - np.amin(img)) / (np.amax(img) - np.amin(img))
+
+        # plt.figure()
+        # plt.imshow(img, cmap='gray', vmin=np.min(img), vmax=np.max(img))
+        # plt.show()
+
         # convert to tensor
         img = torch.from_numpy(img.copy()).float()
         label = torch.from_numpy(label.copy()).float()
