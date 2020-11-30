@@ -104,8 +104,20 @@ if ssim_loss:
 else:
     criterion = nn.MSELoss()
 
+def save_checkpoint(state, filename="checkpoint.pth.tar"):
+    torch.save(state,filename)
+    print('saving checkpoint')
+
+def load_checkpoint(checkpoint):
+    print('loading checkpoint')
+    model.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    epochs = epochs - checkpoint['epoch'] 
+
 optimizer = optim.RMSprop(fcn_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+if load_model:
+    load_checkpoint(torch.load("checkpoint.pth.tar"))
 
 # create dir for score
 score_dir = os.path.join("scores", configs)
@@ -121,6 +133,11 @@ def train():
     hit = 0
     delta = 0.00001
     for epoch in range(epochs):
+        #save checkpoint
+        if( epoch % 5 == 0)
+        checkpoint = {'state_dict':fcn_model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch}
+        save_checkpoint(checkpoint)
+
         scheduler.step()
         if epoch > 2 and abs(validation_accuracy[epoch-2]-validation_accuracy[epoch-1]) < delta:
             hit = hit + 1

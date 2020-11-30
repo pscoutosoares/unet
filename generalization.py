@@ -17,14 +17,11 @@ from torchvision import utils
 from skimage.measure import compare_ssim
 from skimage.measure import compare_psnr
 from math import log10
-net             = 'CoopNet'
-#net             = 'ZERO-ROT-VGG-UNET'
+net             = 'UnetSota'
 projs           =  4
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
-means           = data_mean_value("train3.csv", input_dir) / 255.
-
-
+#means           = data_mean_value("test3.csv", input_dir) / 255.
 
 model_src = "./models/CoopNets-CROPPED-model-4-projs"
 
@@ -68,6 +65,7 @@ def evaluate_img():
         input = Variable(batch['X'].cuda())
         print(input.shape)
         start = time.time()
+        #input = input.unsqueeze(1)
         outputs = fcn_model(input)
         end = time.time()
         elapsed = end-start

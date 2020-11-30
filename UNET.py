@@ -61,7 +61,7 @@ class UNETsota(nn.Module):
         self.conv9_2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv9_3 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv9_4 = nn.Conv2d(64, 1, kernel_size=1)
-        self.outputer = nn.Tanh()
+        self.outputer = nn.Sigmoid()
 
     def forward(self, x):
 
