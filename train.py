@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,date
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -26,6 +26,7 @@ import os
 ssim_loss = False
 crop      = True
 weighted = False
+load_model = True  #loads previously saved model
 
 projs = 4
 net = "CoopNets"
@@ -48,10 +49,12 @@ lr         = 0.00001 # antes le-4 (VGG-UNET)
 step_size  = 100
 gamma      = 0.5
 
-configs         = "{}-model-{}-projs".format(net,projs)
 
-train_file      = "train3.csv"
-val_file        = "validation3.csv"
+
+configs         = "{}-model-{}-projs-{}-date".format(net,projs,date.today())
+
+train_file      = "test4.csv"
+val_file        = "test4.csv"
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
 
@@ -110,35 +113,42 @@ def save_checkpoint(state, filename="checkpoint.pth.tar"):
 
 def load_checkpoint(checkpoint):
     print('loading checkpoint')
-    model.load_state_dict(checkpoint['state_dict'])
+    fcn_model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
-    epochs = epochs - checkpoint['epoch'] 
+    print("Resuming from epoch Nº " +str (checkpoint['epoch']))
+    return checkpoint['epoch']
 
 optimizer = optim.RMSprop(fcn_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
-if load_model:
-    load_checkpoint(torch.load("checkpoint.pth.tar"))
 
 # create dir for score
 score_dir = os.path.join("scores", configs)
 if not os.path.exists(score_dir):
     os.makedirs(score_dir)
 
+if (not os.path.isfile(score_dir+"/results.txt")):
+    with open(score_dir+"/results.txt", "w") as file:
+        file.write("FileStart \n  selected network:" + net + "\n")
+
+start_epoch = 0
+if load_model:
+    start_epoch = load_checkpoint(torch.load(score_dir+"/checkpoint.pth.tar"))
+  
 ssim_train = []
 ssim_validation = []
 psnr_train = []
 psnr_validation = []
 
+
 def train():
     hit = 0
     delta = 0.00001
-    for epoch in range(epochs):
+    for epoch in range(start_epoch, epochs):
         #save checkpoint
-        if( epoch % 5 == 0)
-        checkpoint = {'state_dict':fcn_model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch}
-        save_checkpoint(checkpoint)
+        if( epoch % 5 == 0):
+            checkpoint = {'state_dict':fcn_model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch}
+            save_checkpoint(checkpoint, score_dir+"/checkpoint.pth.tar")
 
-        scheduler.step()
         if epoch > 2 and abs(validation_accuracy[epoch-2]-validation_accuracy[epoch-1]) < delta:
             hit = hit + 1
         else:
@@ -165,6 +175,8 @@ def train():
                 loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            scheduler.step()
+
             output = outputs.data.cpu().numpy()
             N, _, h, w = output.shape
             pred = output.transpose(0, 2, 3, 1).reshape(-1, 1).reshape(N, h, w)
@@ -181,10 +193,14 @@ def train():
             ssim_train.append(np.mean(ssim))
 
             if iter % 100 == 0:
-                print("Train: epoch{}, iter{}, loss: {}, SSIM: {}, PSNR: {}".format(epoch, iter, loss.item(),np.mean(ssim), np.mean(psnr)))
+                # print("Train: epoch{}, iter{}, loss: {}, SSIM: {}, PSNR: {}".format(epoch, iter, loss.item(),np.mean(ssim), np.mean(psnr)))
+                with open(score_dir+"/results.txt", "a") as file:
+                    file.write("Train: epoch{}, iter{}, loss: {}, SSIM: {}, PSNR: {} \n".format(epoch, iter, loss.item(),np.mean(ssim), np.mean(psnr)) ) 
 
-        print("Finish epoch {}, time elapsed {}".format(epoch, time.time() - ts))
-        torch.save(fcn_model, model_path)
+        with open(score_dir+"/results.txt", "a") as file:
+            file.write("Finish epoch {}, time elapsed {} \n".format(epoch, time.time() - ts))
+        # print("Finish epoch {}, time elapsed {}".format(epoch, time.time() - ts))
+        #torch.save(fcn_model, model_path)
 
         val(epoch)
 
@@ -221,8 +237,8 @@ def val(epoch):
     mse_accs = np.mean(total_mse)
     validation_accuracy[epoch] = mse_accs
 
-    print("val: epoch{}, mse_acc: {}, ssim: {} ,  psnr: {}".format(epoch, mse_accs,  np.mean(ssim), np.mean(psnr) ))
-
+    with open(score_dir+"/results.txt", "a") as file:
+        file.write("val: epoch{}, mse_acc: {}, ssim: {} ,  psnr: {}".format(epoch, mse_accs,  np.mean(ssim), np.mean(psnr) ))
 
 def mse_acc(pred, target):
 
@@ -236,8 +252,13 @@ if __name__ == "__main__":
     duration = end - start
 
     d = datetime(1, 1, 1) + timedelta(seconds=int(duration))
-    print("DAYS:HOURS:MIN:SEC")
-    print("%d:%d:%d:%d" % (d.day - 1, d.hour, d.minute, d.second))
-    print("mean SSIM-Train{}, Mean ssim-Validation: {}, Mean psnr Train: {}, Mean psnr Validation: {}".format(
+    # print("DAYS:HOURS:MIN:SEC")
+    # print("%d:%d:%d:%d" % (d.day - 1, d.hour, d.minute, d.second))
+    # print("mean SSIM-Train{}, Mean ssim-Validation: {}, Mean psnr Train: {}, Mean psnr Validation: {}".format(
+    #     np.mean(ssim_train), np.mean(ssim_validation), np.mean(psnr_train), np.mean(psnr_validation)))
+    np.save(score_dir+'/validation_accuracy_{}-model-{}-projs.npy'.format(net,projs), validation_accuracy)
+    with open(score_dir+"/results.txt", "a") as file:
+        file.write("DAYS:HOURS:MIN:SEC \n")
+        file.write("%d:%d:%d:%d \n" % (d.day - 1, d.hour, d.minute, d.second))
+        file.write("mean SSIM-Train{}, Mean ssim-Validation: {}, Mean psnr Train: {}, Mean psnr Validation: {} \n".format(
         np.mean(ssim_train), np.mean(ssim_validation), np.mean(psnr_train), np.mean(psnr_validation)))
-    np.save('validation_accuracy_{}-model-{}-projs.npy'.format(net,projs), validation_accuracy)
