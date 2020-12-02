@@ -17,6 +17,7 @@
 import os
 import numpy as np
 from scipy import misc
+import cv2
 import matplotlib.pyplot as plt
 
 """
@@ -40,36 +41,36 @@ target_dir = "./output/"
 files_ext = '.png'
 
 debug = False
-residual_learning = False
+residual_learning = True
 
 if not os.path.isdir(target_dir):
     os.mkdir(target_dir)
 
 for file in os.listdir(high_quality_dir):
+    if file.endswith(files_ext):
 
-        if file.endswith(files_ext):
+        input_img = cv2.imread(os.path.join(low_quality_dir,file),0)
 
-            input_img = misc.imread(os.path.join(low_quality_dir,file), mode='F')
+        output_img = cv2.imread(os.path.join(high_quality_dir,file),0)
+        #output_img = np.transpose(output_img)
 
-            output_img = misc.imread(os.path.join(high_quality_dir,file), mode='F')
-            #output_img = np.transpose(output_img)
-
-            if residual_learning:
-                target = ((input_img-output_img)/255)
-                target = (target - np.amin(target))/(np.amax(target) - np.amin(target))
-                #target = output_img/255 - 0.5
-            else:
-                target = output_img/255
-                #target = (target - np.amin(target)) / (np.amax(target) - np.amin(target))
-            if debug:
-                print('min: {} max: {}'.format(np.min(target), np.max(target)))
-                plt.figure()
-                plt.imshow(target, cmap='gray', vmin=np.min(target), vmax=np.max(target))
-                plt.show()
-                break
-            else:
-                np.save(target_dir+file[0:len(file)-3]+'npy', target)
-                print(target_dir+file+ " Done!")
+        if residual_learning:
+            target = ((input_img-output_img)/255)
+            
+            target = (target - np.amin(target))/(np.amax(target) - np.amin(target))
+            #target = output_img/255 - 0.5
+        else:
+            target = output_img/255
+            #target = (target - np.amin(target)) / (np.amax(target) - np.amin(target))
+        if debug:
+            print('min: {} max: {}'.format(np.min(target), np.max(target)))
+            plt.figure()
+            plt.imshow(target, cmap='gray', vmin=np.min(target), vmax=np.max(target))
+            plt.show()
+            break
+        else:
+            np.save(target_dir+file[0:len(file)-3]+'npy', target)
+            print(target_dir+file+ " Done!")
 
 
 
