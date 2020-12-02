@@ -18,7 +18,7 @@ import os
 import numpy as np
 import pandas as pd
 from math import floor
-import scipy.misc
+import cv2
 import random
 
 
@@ -109,7 +109,7 @@ def data_mean_value(csv, dir):
     values = np.zeros((r,3))
     idx = 0
     for i, row in data.iterrows():
-        img = scipy.misc.imread(dir+row[0], mode="RGB")
+        img = cv2.imread(dir+row[0], 0)
         values[idx,:] = np.mean(img, axis=(0,1))
         idx += 1
 

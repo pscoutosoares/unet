@@ -14,7 +14,7 @@
 
 import pandas as pd
 import numpy as np
-import scipy.misc
+import cv2
 import random
 import os
 import matplotlib.pyplot as plt
@@ -63,7 +63,7 @@ class Tomographic_Dataset(Dataset):
 
     def __getitem__(self, idx):
         img_name   = self.data.iloc[idx, 0]
-        img        = scipy.misc.imread(self.input_dir+img_name, flatten=True)
+        img        = cv2.imread(self.input_dir+img_name,0)
         label_name = self.data.iloc[idx, 1]
         label      = np.load(self.target_dir+label_name)
 
