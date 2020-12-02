@@ -15,6 +15,7 @@ from GOOGLENET import GOOGLENETmodel
 from CoopNets import CoopNets
 from skimage.measure import compare_ssim
 from skimage.measure import compare_psnr
+import cv2
 
 import numpy as np
 import time
@@ -26,7 +27,7 @@ import os
 ssim_loss = False
 crop      = True
 weighted = False
-load_model = True  #loads previously saved model
+load_model = False  #loads previously saved model
 
 projs = 4
 net = "CoopNets"
@@ -53,8 +54,8 @@ gamma      = 0.5
 
 configs         = "{}-model-{}-projs-{}-date".format(net,projs,date.today())
 
-train_file      = "test4.csv"
-val_file        = "test4.csv"
+train_file      = "train3.csv"
+val_file        = "validation3.csv"
 input_dir       = "./resized_train_ld/"
 target_dir      = "./output/"
 
@@ -181,14 +182,19 @@ def train():
             N, _, h, w = output.shape
             pred = output.transpose(0, 2, 3, 1).reshape(-1, 1).reshape(N, h, w)
 
-            target = batch['l'].cpu().numpy().reshape(N, h, w)
+            #target = batch['l'].cpu().numpy().reshape(N, h, w)
+            tmp_input = batch['X'].cpu().numpy().reshape(N, h, w)
+            original = batch['o']
             psnr = []
             ssim = []
             for i in range(N):
-                d1 = pred[i]
-                d2 = target[i]
-                psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
-                ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
+                d1 = tmp_input[i] - pred[i]
+                d1= (d1 - np.amin(d1))/(np.amax(d1) - np.amin(d1))
+                # d2 = target[i]
+                # d3 = tmp_input[i]
+                d2 = cv2.resize(cv2.imread(original[i],0),(64,64))/255
+                psnr.append(compare_psnr(d1, d2, data_range=1))
+                ssim.append(compare_ssim(d1, d2, data_range=1))
             psnr_train.append(np.mean(psnr))
             ssim_train.append(np.mean(ssim))
 
@@ -220,13 +226,21 @@ def val(epoch):
         N, _, h, w = output.shape
         pred = output.transpose(0, 2, 3, 1).reshape(-1, 1).reshape(N, h, w)
         target = batch['l'].cpu().numpy().reshape(N, h, w)
+        tmp_input = batch['X'].cpu().numpy().reshape(N, h, w)
+        original = batch['o']
+        
         psnr = []
         ssim = []
+
+           
         for i in range(N):
-            d1 = pred[i]
-            d2 = target[i]
-            psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
-            ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
+            d1 = tmp_input[i] - pred[i]
+            d1 = (d1 - np.amin(d1))/(np.amax(d1) - np.amin(d1))
+            # d2 = target[i]
+            # d3 = tmp_input[i]
+            d2 = cv2.imread(original[i],0)/255
+            psnr.append(compare_psnr(d1, d2, data_range=1))
+            ssim.append(compare_ssim(d1, d2, data_range=1))
         psnr_validation.append(np.mean(psnr))
         ssim_validation.append(np.mean(ssim))
 

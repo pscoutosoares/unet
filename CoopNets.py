@@ -8,6 +8,7 @@ class CoopNets(nn.Module):
         self.netA = UNETsota()
         self.netB = GOOGLENETmodel()
     def forward(self,x):
-	    x = x.unsqueeze(1)
-	    ux = self.netA(x)
-	    return self.netB(ux)
+        x = x.unsqueeze(1)
+        fx = self.netA(x)
+        gx = self.netB(x-fx)
+        return gx
