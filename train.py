@@ -27,7 +27,7 @@ import os
 ssim_loss = False
 crop      = True
 weighted = False
-load_model = False  #loads previously saved model
+load_model = True  #loads previously saved model
 
 projs = 4
 net = "CoopNets"
@@ -50,7 +50,7 @@ lr         = 0.00001 # antes le-4 (VGG-UNET)
 step_size  = 100
 gamma      = 0.5
 
-
+debug = True
 
 configs         = "{}-model-{}-projs-{}-date".format(net,projs,date.today())
 
@@ -146,17 +146,17 @@ def train():
     delta = 0.00001
     for epoch in range(start_epoch, epochs):
         #save checkpoint
-        if( epoch % 5 == 0):
-            checkpoint = {'state_dict':fcn_model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch}
-            save_checkpoint(checkpoint, score_dir+"/checkpoint.pth.tar")
-
+        
         if epoch > 2 and abs(validation_accuracy[epoch-2]-validation_accuracy[epoch-1]) < delta:
             hit = hit + 1
         else:
             hit = 0
         if hit == 5:
             break
-
+          
+        if (debug and not os.path.exists(score_dir+'/epoch_'+str(epoch))):
+            os.makedirs(score_dir+'/epoch_'+str(epoch))
+                    
         ts = time.time()
         for iter, batch in enumerate(train_loader):
             optimizer.zero_grad()
@@ -167,7 +167,10 @@ def train():
             else:
                 inputs, labels = Variable(batch['X']), Variable(batch['Y'])
 
-            outputs = fcn_model(inputs)
+            flag_print = False
+            if ( iter >= (len(train_loader) -1)):
+                flag_print = True
+            outputs = fcn_model(inputs, score_dir+'/epoch_'+str(epoch)+'/', flag_print)
             if ssim_loss:
                 loss = - criterion(outputs, labels)
             elif weighted:
@@ -181,20 +184,20 @@ def train():
             output = outputs.data.cpu().numpy()
             N, _, h, w = output.shape
             pred = output.transpose(0, 2, 3, 1).reshape(-1, 1).reshape(N, h, w)
-
-            #target = batch['l'].cpu().numpy().reshape(N, h, w)
-            tmp_input = batch['X'].cpu().numpy().reshape(N, h, w)
-            original = batch['o']
+            target = batch['Y'].cpu().numpy().reshape(N, h, w)
             psnr = []
             ssim = []
+            
+            if debug:     
+                cv2.imwrite(score_dir+'/epoch_'+str(epoch)+'/pred.png',pred[0] * 255)  
+                cv2.imwrite(score_dir+'/epoch_'+str(epoch)+'/target.png',target[0] *255)
+               
             for i in range(N):
-                d1 = tmp_input[i] - pred[i]
-                d1= (d1 - np.amin(d1))/(np.amax(d1) - np.amin(d1))
-                # d2 = target[i]
-                # d3 = tmp_input[i]
-                d2 = cv2.resize(cv2.imread(original[i],0),(64,64))/255
-                psnr.append(compare_psnr(d1, d2, data_range=1))
-                ssim.append(compare_ssim(d1, d2, data_range=1))
+                d1 = pred[i]
+                d2 = target[i]
+                psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
+                ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
+
             psnr_train.append(np.mean(psnr))
             ssim_train.append(np.mean(ssim))
 
@@ -209,6 +212,9 @@ def train():
         #torch.save(fcn_model, model_path)
 
         val(epoch)
+        if( epoch % 2 == 0):
+            checkpoint = {'state_dict':fcn_model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch+1}
+            save_checkpoint(checkpoint, score_dir+"/checkpoint.pth.tar")
 
 def val(epoch):
     fcn_model.eval()
@@ -220,29 +226,23 @@ def val(epoch):
         else:
             inputs = Variable(batch['X'])
 
-        output = fcn_model(inputs)
+        output = fcn_model(inputs,score_dir+'/epoch_'+str(epoch)+'/')
         output = output.data.cpu().numpy()
 
         N, _, h, w = output.shape
         pred = output.transpose(0, 2, 3, 1).reshape(-1, 1).reshape(N, h, w)
         target = batch['l'].cpu().numpy().reshape(N, h, w)
-        tmp_input = batch['X'].cpu().numpy().reshape(N, h, w)
-        original = batch['o']
         
         psnr = []
         ssim = []
-
-           
         for i in range(N):
-            d1 = tmp_input[i] - pred[i]
-            d1 = (d1 - np.amin(d1))/(np.amax(d1) - np.amin(d1))
-            # d2 = target[i]
-            # d3 = tmp_input[i]
-            d2 = cv2.imread(original[i],0)/255
-            psnr.append(compare_psnr(d1, d2, data_range=1))
-            ssim.append(compare_ssim(d1, d2, data_range=1))
+            d1 = pred[i]
+            d2 = target[i]
+            psnr.append(compare_psnr(d1 - np.mean(d1), d2 - np.mean(d2)))
+            ssim.append(compare_ssim(d1 - np.mean(d1), d2 - np.mean(d2)))
         psnr_validation.append(np.mean(psnr))
         ssim_validation.append(np.mean(ssim))
+
 
         for p, t in zip(pred, target):
             total_mse.append(mse_acc(p, t))

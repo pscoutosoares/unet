@@ -66,8 +66,7 @@ class Tomographic_Dataset(Dataset):
         img        = cv2.imread(self.input_dir+img_name,0)
         label_name = self.data.iloc[idx, 1]
         label      = np.load(self.target_dir+label_name)
-
-
+    
         (_, file) = os.path.split(label_name)
         original   = original_src+file[0:len(file)-3]+'png'
 
@@ -101,7 +100,6 @@ class Tomographic_Dataset(Dataset):
         img = torch.from_numpy(img.copy()).float()
         label = torch.from_numpy(label.copy()).float()
         #label = img-label
-
         # create one-hot encoding
         h, w = label.size()
         target = torch.zeros(1, h, w)

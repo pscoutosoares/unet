@@ -41,7 +41,7 @@ target_dir = "./output/"
 files_ext = '.png'
 
 debug = False
-residual_learning = True
+residual_learning = False
 
 if not os.path.isdir(target_dir):
     os.mkdir(target_dir)
@@ -56,7 +56,6 @@ for file in os.listdir(high_quality_dir):
 
         if residual_learning:
             target = ((input_img-output_img)/255)
-            
             target = (target - np.amin(target))/(np.amax(target) - np.amin(target))
             #target = output_img/255 - 0.5
         else:
@@ -67,7 +66,7 @@ for file in os.listdir(high_quality_dir):
             plt.figure()
             plt.imshow(target, cmap='gray', vmin=np.min(target), vmax=np.max(target))
             plt.show()
-            break
+            #break
         else:
             np.save(target_dir+file[0:len(file)-3]+'npy', target)
             print(target_dir+file+ " Done!")
